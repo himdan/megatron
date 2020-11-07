@@ -12,7 +12,9 @@
     "require": {
         "php": ">=7.2.5",
         "twig/twig": "^3.0",
-        "symfony/asset": "^5.1"
+        "symfony/asset": "^5.1",
+        "illuminate/database": "^7.29",
+        "vlucas/phpdotenv": "^5.2"
     },
     "autoload": {
         "psr-4": {

@@ -9,9 +9,12 @@
 namespace MegatronFrameWork;
 
 
+
+use MegatronFrameWork\Component\ErrorController;
 use MegatronFrameWork\Component\Request;
 use MegatronFrameWork\Component\Response;
 use MegatronFrameWork\Component\Router;
+use MegatronFrameWork\Db\EntityManager;
 use Twig\Environment;
 
 class Application
@@ -24,16 +27,18 @@ class Application
     protected $response;
     protected $context;
     protected $twig;
+    protected $dbManager;
     /**
      * @var Application $instance
      */
     protected static $instance;
 
-    public function __construct(Environment $twig)
+    public function __construct(Environment $twig, $config = [])
     {
         $this->router = new Router();
+        $this->router->get('errors', [ErrorController::class, '_invoke']);
         $this->twig = $twig;
-
+        $this->dbManager = EntityManager::boot($config);
     }
 
     public function handle(Request $request): Response
@@ -43,10 +48,17 @@ class Application
             return  $request->getBaseUrl() . "/" .  $resource;
         });
         $this->twig->addFunction($function);
-        $controller = $this->router->resolve($request);
-        $this->context = [new $controller[0]($this->twig) , $controller[1]];
-        return call_user_func($this->context, $this->request);
+        try{
+            $controller = $this->router->resolve($request);
+            $this->context = [new $controller[0]($this->twig) , $controller[1]];
+            return call_user_func($this->context, $this->request);
+        } catch(\Exception $exception){
+            return call_user_func([new ErrorController($this->twig), '__invoke'], $request, $exception);
+        }
+
     }
+
+
 
     public function terminate()
     {

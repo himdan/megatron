@@ -12,15 +12,12 @@ namespace App\Controllers;
 use MegatronFrameWork\Component\Controller;
 use MegatronFrameWork\Component\Request;
 
-class HomeController extends Controller
+class ReportController extends Controller
 {
 
     public function index(Request $request){
-        return $this->renderView('base.html.twig', ['x' => 10]);
-    }
-
-    public function test(Request $request){
-        return $this->renderView('base.html.twig', ['x' => 10]);
+        $length = $request->get('length',0);
+        return $this->renderView('pages/report/index.html.twig', ['length' => $length]);
     }
 
 }
