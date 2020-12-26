@@ -9,6 +9,7 @@
 namespace MegatronFrameWork\Component;
 
 
+use MegatronFrameWork\DI\Container;
 use Twig\Environment;
 
 class Controller
@@ -17,9 +18,14 @@ class Controller
      * @var Environment
      */
     protected $twig;
-    public function __construct(Environment $twig)
+    /**
+     * @var Container $container
+     */
+    protected $container;
+    public function __construct(Environment $twig, Container $container)
     {
         $this->twig = $twig;
+        $this->container = $container;
     }
 
     public function renderView($view, $args)
@@ -28,5 +34,14 @@ class Controller
         $response->setContent($this->twig->render($view, $args));
         return $response;
 
+    }
+
+    /**
+     * @param $name
+     * @return $name
+     */
+    public function get($name)
+    {
+        return $this->container->get($name);
     }
 }

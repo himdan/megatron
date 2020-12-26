@@ -15,6 +15,8 @@ use MegatronFrameWork\Component\Request;
 use MegatronFrameWork\Component\Response;
 use MegatronFrameWork\Component\Router;
 use MegatronFrameWork\Db\EntityManager;
+use MegatronFrameWork\DI\ArgumentResolver;
+use MegatronFrameWork\DI\Container;
 use Twig\Environment;
 
 class Application
@@ -29,6 +31,10 @@ class Application
     protected $twig;
     protected $dbManager;
     /**
+     * @var Container $container
+     */
+    protected $container;
+    /**
      * @var Application $instance
      */
     protected static $instance;
@@ -36,6 +42,7 @@ class Application
     public function __construct(Environment $twig, $config = [])
     {
         $this->router = new Router();
+        $this->container = new Container(new ArgumentResolver());
         $this->router->get('errors', [ErrorController::class, '_invoke']);
         $this->twig = $twig;
         $this->dbManager = EntityManager::boot($config);
@@ -50,7 +57,7 @@ class Application
         $this->twig->addFunction($function);
         try{
             $controller = $this->router->resolve($request);
-            $this->context = [new $controller[0]($this->twig) , $controller[1]];
+            $this->context = [new $controller[0]($this->twig, $this->container) , $controller[1]];
             return call_user_func($this->context, $this->request);
         } catch(\Exception $exception){
             return call_user_func([new ErrorController($this->twig), '__invoke'], $request, $exception);
