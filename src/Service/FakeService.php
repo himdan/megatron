@@ -9,24 +9,31 @@
 namespace App\Service;
 
 
-class FakeService
+class FakeService implements IFake
 {
     /**
      * @var FakeAService $fakeAService
      */
     private $fakeAService;
+    protected $parameters = [];
 
     /**
      * FakeService constructor.
      * @param FakeAService $fakeAService
+     * @param array $parameters
      */
-    public function __construct(FakeAService $fakeAService)
+    public function __construct(FakeAService $fakeAService, array  $parameters)
     {
         $this->fakeAService = $fakeAService;
+        $this->parameters = $parameters;
     }
 
-
-    public function calculate($x){
+    /**
+     * @param $x
+     * @return float|int
+     */
+    public function calculate($x)
+    {
         return $this->fakeAService->getA() * $x;
     }
 

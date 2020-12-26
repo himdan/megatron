@@ -11,8 +11,19 @@ namespace App\Service;
 
 class FakeCService
 {
+
+    protected $y;
+    /**
+     * FakeCService constructor.
+     * @param int $y
+     */
+    public function __construct($y)
+    {
+        $this->y = $y;
+    }
+
     public function getC()
     {
-        return 10;
+        return 10 * $this->y;
     }
 }

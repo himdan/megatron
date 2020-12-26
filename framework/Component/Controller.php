@@ -38,7 +38,7 @@ class Controller
 
     /**
      * @param $name
-     * @return $name
+     * @return mixed
      */
     public function get($name)
     {

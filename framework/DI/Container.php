@@ -9,6 +9,8 @@
 namespace MegatronFrameWork\DI;
 
 
+use MegatronFrameWork\Component\Configuration;
+
 class Container
 {
 
@@ -17,21 +19,31 @@ class Container
      */
     private $argumentsResolver;
     protected $registry = [];
+    /**
+     * @var Configuration $configuration
+     */
+    protected $configuration;
+
 
     /**
      * Container constructor.
-     * @param ArgumentResolver $argumentsResolver
+     * @param Configuration $configuration
+     * @param array $precompiled
+     * @param array $parameters
      */
-    public function __construct(ArgumentResolver $argumentsResolver)
+    public function __construct(Configuration $configuration,$precompiled = [], $parameters = [])
     {
-        $this->argumentsResolver = $argumentsResolver;
+        $precompiled[Container::class] = $this;
+        $this->argumentsResolver = new ArgumentResolver($configuration, $precompiled, $parameters);
+        $this->registry = array_merge($this->registry, $precompiled);
     }
 
     public function get($class)
     {
 
         if(isset($this->registry[$class])) return $this->registry[$class];
-        return $this->argumentsResolver->resolve($class);
+        $this->registry[$class] = $this->argumentsResolver->resolve($class);
+        return $this->registry[$class];
     }
 
 
