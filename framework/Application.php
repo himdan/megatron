@@ -16,9 +16,11 @@ use MegatronFrameWork\Component\Response;
 use MegatronFrameWork\Component\Router;
 use MegatronFrameWork\Db\EntityManager;
 use MegatronFrameWork\DI\Container;
+use MegatronFrameWork\utility\ClassUtility;
+use Symfony\Component\Finder\Finder;
 use Twig\Environment;
 
-class Application
+abstract class Application
 {
     /**
      * @var Router $router
@@ -41,17 +43,23 @@ class Application
      * @var Application $instance
      */
     protected static $instance;
+    /**
+     * @var ClassUtility $classUtility
+     */
+    protected $classUtility;
 
-    public function __construct(Environment $twig, $config = [], $services = [])
+    public function __construct(Environment $twig, $config = [], $services = [], $dir = __DIR__)
     {
         $this->router = new Router();
         $this->router->get('errors', [ErrorController::class, '_invoke']);
         $this->twig = $twig;
+        $this->classUtility =  new ClassUtility($dir);
         $this->configuration = (new Configuration())->load($config, $services);
         $this->dbManager = EntityManager::boot($config);
-        $this->container = new Container($this->configuration, [
+        $this->container = new Container($this->configuration,$this->classUtility,[
             Configuration::class => $this->configuration,
             Environment::class => $this->twig,
+            ClassUtility::class => $this->classUtility,
 
         ], [
 
@@ -62,6 +70,7 @@ class Application
     public function handle(Request $request): Response
     {
         $this->request = $request;
+        $this->container->registerResolved($this->request);
         $function = new \Twig\TwigFunction('asset', function ($resource) use ($request) {
             return $request->getBaseUrl() . "/" . $resource;
         });
@@ -69,14 +78,19 @@ class Application
         try {
             $controller = $this->router->resolve($request);
             $this->context = [$this->container->get($controller[0]), $controller[1]];
-            return call_user_func($this->context, $this->request);
+            return $this->container->getContext($this->context);
         } catch (\Exception $exception) {
             return call_user_func([new ErrorController($this->twig, $this->container), '__invoke'], $request, $exception);
         }
 
     }
 
+    protected function loadConfiguration($rootDir)
+    {
 
+
+
+    }
     public function terminate()
     {
 

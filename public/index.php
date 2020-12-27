@@ -4,7 +4,13 @@ use MegatronFrameWork\Component\Request;
 require dirname(__DIR__).'/vendor/autoload.php';
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__.'/../');
-$config = $dotenv->load();
+$parameters = $dotenv->load();
+$services = [
+    \App\Service\FakeService::class  => [1 => [
+        'key' => 'val'
+    ]],
+    \App\Service\FakeCService::class => [20]
+];
 
 $loader = new \Twig\Loader\FilesystemLoader(__DIR__.'/../template');
 $twig = new \Twig\Environment($loader, [
@@ -13,7 +19,7 @@ $twig = new \Twig\Environment($loader, [
 $twig = new \Twig\Environment($loader);
 
 $request = Request::createFromGlobal();
-$application = new \MegatronFrameWork\Application($twig,$config);
+$application = new App\FontApplication($twig,$parameters, $services);
 $application
     ->router
     ->get('/', [\App\Controllers\DashboardController::class, 'index'])
